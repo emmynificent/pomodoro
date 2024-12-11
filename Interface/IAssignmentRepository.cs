@@ -1,15 +1,18 @@
+using Pomodoro.Dto;
 using Pomodoro.Models;
 
 namespace Pomodoro.Interface;
-public interface IAssignmentRespository
+public interface IAssignmentRepository
 {
     ICollection<Assignment> GetAssignments();
-    Assignment GetAssignment (int Id);
+    Assignment GetAssignment (int AssignmentId);
     bool CreateAssignment (Assignment assignment);
-    bool AssignmentExist (int Id);
+    bool AssignmentExist (int AssignmentId);
     bool DeleteAssignment (Assignment assignment);
     bool UpdateAssignment (Assignment assignment);
-    ICollection<Reminder> GetRemindersByAssignmentId(int Id); // this is to get the reminders associated with this assignment.
+    ICollection<Reminder> GetRemindersByAssignmentId(int AsssignmentId); 
+    // this is to get the reminders associated with this assignment.
+    ICollection<Assignment> GetAssignmentByUserId(string userId);
     bool Save();
 
-}
+}   

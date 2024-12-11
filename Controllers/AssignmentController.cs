@@ -14,24 +14,30 @@ namespace Pomodoro.Controller;
 
 public class AssignmentController: ControllerBase
 {
-    private readonly IAssignmentRespository _assignmentRepository;
+    private readonly IAssignmentRepository _assignmentRepository;
     private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
 
-    public AssignmentController(IAssignmentRespository assignmentRespository, IMapper mapper)
+    public AssignmentController(IAssignmentRepository assignmentRespository, IMapper mapper, IUserRepository userRepository)
     {
         _assignmentRepository = assignmentRespository;
         _mapper = mapper;
+        _userRepository = userRepository;
     }
 
     [HttpGet]
     public IActionResult GetAssignments()
     {
-        var assignments = _assignmentRepository.GetAssignments();
-        return Ok(assignments);
+        var assignments =_assignmentRepository.GetAssignments();
+        var assignmentMaps = _mapper.Map<List<AssignmentOutputDto>>(assignments);
+        return Ok(assignmentMaps);
+        //return Ok(assignmentMaps);
 
     }
 
     [HttpGet("{assignmentId}")]
+    [ProducesResponseType(200, Type = typeof(Assignment))]
+    [ProducesResponseType(404)]
 
     public IActionResult GetAssignment(int assignmentId)
     {
@@ -40,42 +46,64 @@ public class AssignmentController: ControllerBase
         {
             return NotFound($"{assignmentId} not found");
         }        
-       var assignment = _assignmentRepository.GetAssignment(assignmentId);
+       var assignment = _mapper.Map<AssignmentDto>(_assignmentRepository.GetAssignment(assignmentId));
+       if(!ModelState.IsValid)
+       {
+            return BadRequest(ModelState);
+
+       }
         return Ok(assignment);
         
     }
+
+
     [HttpPost]
-    public IActionResult CreateAssignment([FromBody] AssignmentDto assignmentDto)
+
+    // there should be a check to see if the the userId even exist before the assignment is created.
+    public IActionResult CreateAssignment([FromBody] AssignmentDto assignment)
     {
-        if(assignmentDto == null)
+        if(assignment == null)
             return BadRequest();
-        var assignments = _assignmentRepository.GetAssignments().Where(a=> a.AssignmentTitle.Trim()== assignmentDto.AssignmentTitle.Trim()).FirstOrDefault();
+        var assignments = _assignmentRepository.GetAssignments().Where(a=> a.AssignmentTitle.Trim()== assignment.AssignmentTitle.Trim()).FirstOrDefault();
         
         if(!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        var assignmentMap = _mapper.Map<Assignment>(assignmentDto);
+        var assignmentMap = _mapper.Map<Assignment>(assignment);
         if(!_assignmentRepository.CreateAssignment(assignmentMap))
             return NotFound();
         return Ok();
     }
 
+
     [HttpPut ("{assignmentId}")]
-    public IActionResult UpdateAssignment(int assignmentId, [FromBody] AssignmentDto updateAssignment)
+    public IActionResult UpdateAssignment(int assignmentId, [FromBody] AssignmentInputDto updateAssignment)
     {
         // var search = _assignmentRepository.AssignmentExist(Id);
         if(updateAssignment == null)
             return BadRequest();
         if(!ModelState.IsValid)
             return BadRequest(ModelState);
+
         if(!_assignmentRepository.AssignmentExist(assignmentId))
             return NotFound("This ID does not exist");
-        var assignmentMap = _mapper.Map<Assignment>(updateAssignment);
-        if(!_assignmentRepository.UpdateAssignment(assignmentMap))
+            
+        var assignmentExist = _assignmentRepository.GetAssignment(assignmentId);
+        if(assignmentExist == null)
+        {
+            return NotFound("The assignment could not be found!");
+        }
+
+        _mapper.Map(updateAssignment, assignmentExist);
+
+        if(!_assignmentRepository.UpdateAssignment(assignmentExist))
+
             return BadRequest("Something went wrong");
+
         return NoContent();
     }
+
     [HttpDelete("{assignmentId}")]
     public IActionResult DeleteAssignment(int assignmentId)
     {
@@ -98,5 +126,15 @@ public class AssignmentController: ControllerBase
     }
 
     //reminders under one assignment
+    [HttpGet("GetAssignmentByUserId")]
+    public IActionResult GetAssignmentByUserId(string userId)
+    {
+        if(!_userRepository.UserExist(userId))
+            return NotFound("User does not exist");
+        var assignmentByUser = _assignmentRepository.GetAssignmentByUserId(userId);
+        return Ok(assignmentByUser);
+    }
+
+
 
 }

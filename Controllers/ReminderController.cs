@@ -13,9 +13,9 @@ namespace Pomodoro.Controller;
 public class ReminderController: ControllerBase
 {
     private readonly IReminderRepository _reminderRepository;
-    private readonly IAssignmentRespository _assignmentRepository;
+    private readonly IAssignmentRepository _assignmentRepository;
     private readonly IMapper _mapper;
-    public ReminderController(IReminderRepository reminderRepository, IAssignmentRespository assignmentRespository, IMapper mapper)
+    public ReminderController(IReminderRepository reminderRepository, IAssignmentRepository assignmentRespository, IMapper mapper)
     {
         _reminderRepository = reminderRepository;
         _mapper = mapper;

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pomodoro.Models;
 
 public class Assignment
@@ -11,7 +13,8 @@ public class Assignment
     public Priority priority {get; set;}
     public bool SetReminder {get; set;} = false;
     public ICollection<Reminder>? Reminders {get; set;}
-
+    public string UserId {get; set;}
+    public User assignmentOwner {get; set;} 
 }
 
 public enum Priority
