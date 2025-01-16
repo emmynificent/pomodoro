@@ -4,15 +4,16 @@ using Pomodoro.Models;
 namespace Pomodoro.Interface;
 public interface IAssignmentRepository
 {
-    ICollection<Assignment> GetAssignments();
-    Assignment GetAssignment (int AssignmentId);
-    bool CreateAssignment (Assignment assignment);
+    
+    Task<ICollection<Assignment>> GetAssignmentsAsync();
+    Task<Assignment> GetAssignmentAsync (int AssignmentId);
+    Task<Assignment> CreateAssignmentAsync (Assignment assignment);
     bool AssignmentExist (int AssignmentId);
-    bool DeleteAssignment (Assignment assignment);
-    bool UpdateAssignment (Assignment assignment);
-    ICollection<Reminder> GetRemindersByAssignmentId(int AsssignmentId); 
+    Task<Assignment> DeleteAssignment (Assignment assignment);
+    Task<bool> UpdateAssignment (Assignment assignment);
+   // ICollection<Reminder> GetRemindersByAssignmentId(int AsssignmentId); 
     // this is to get the reminders associated with this assignment.
-    ICollection<Assignment> GetAssignmentByUserId(string userId);
+    Task<ICollection<Assignment>> GetAssignmentByUserId(string userId);
+    Task<ICollection<Assignment>> GetAssignmentsByUserEmailAsync(string userEmail);
     bool Save();
-
 }   

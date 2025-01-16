@@ -287,3 +287,8 @@ C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\Microsoft.Ex
 C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\pomodoro.staticwebassets.runtime.json
 C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.UI.dll
 C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Embedded.dll
+C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\package-lock.json
+C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\package.json
+C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\the-pomodoro-frontend\package-lock.json
+C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\the-pomodoro-frontend\package.json
+C:\Users\Oluwaseun O\Desktop\asp\pomodoro\pomodoro\bin\Debug\net8.0\the-pomodoro-frontend\public\manifest.json

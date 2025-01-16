@@ -10,6 +10,10 @@ using AutoMapper;
 using Pomodoro.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Configuration.Models;
+using System.Text;
+using System.Diagnostics.SymbolStore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,22 +34,41 @@ builder.Services.AddDbContext<AssignmentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
  });
 
-
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
+builder.Services.AddCors(options =>
 {
-   options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+   options.AddPolicy("AllowAll", policy => 
    {
-      ValidateIssuer = true,
-      ValidateAudience = true,
+      policy.AllowAnyOrigin()
+      .AllowAnyHeader()
+      .AllowAnyMethod();
+   });
+});
+
+builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
+
+
+builder.Services.AddAuthentication(options => 
+{
+   options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+   options.DefaultScheme  = JwtBearerDefaults.AuthenticationScheme;
+   options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+
+.AddJwtBearer(jwt => 
+{
+
+   var Key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtConfig:Secret").Value);
+   jwt.SaveToken = true;
+   jwt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+   {
       ValidateIssuerSigningKey = true,
-      ValidIssuer = builder.Configuration["Jwt:Issuer"],
-      ValidAudience = builder.Configuration["Jwt: Audience"],
-      IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-         System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-      )
+      IssuerSigningKey = new SymmetricSecurityKey(Key),
+      ValidateIssuer = false,
+      ValidateAudience = false,
+      RequireExpirationTime = false, //update to true when refresh token is added
+      ValidateLifetime = true,
    };
+
 });
 
 
@@ -80,11 +103,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-//app.MapIdentityApi<Owner>();
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
+
+app.UseAuthorization();
 
 
 app.MapControllers();
+
 
 app.Run();

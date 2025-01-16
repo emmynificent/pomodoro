@@ -195,7 +195,7 @@ namespace pomodoro.Migrations
                         new
                         {
                             Id = 1,
-                            AssignmentCreated = new DateTime(2024, 11, 27, 12, 42, 26, 588, DateTimeKind.Local).AddTicks(1339),
+                            AssignmentCreated = new DateTime(2024, 12, 11, 14, 57, 51, 521, DateTimeKind.Local).AddTicks(257),
                             AssignmentDescription = "",
                             AssignmentTitle = "Chemistry",
                             DueDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -206,7 +206,7 @@ namespace pomodoro.Migrations
                         new
                         {
                             Id = 2,
-                            AssignmentCreated = new DateTime(2024, 11, 27, 12, 42, 26, 588, DateTimeKind.Local).AddTicks(1368),
+                            AssignmentCreated = new DateTime(2024, 12, 11, 14, 57, 51, 521, DateTimeKind.Local).AddTicks(283),
                             AssignmentDescription = "",
                             AssignmentTitle = "Physics",
                             DueDate = new DateTime(2024, 1, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -217,7 +217,7 @@ namespace pomodoro.Migrations
                         new
                         {
                             Id = 3,
-                            AssignmentCreated = new DateTime(2024, 11, 27, 12, 42, 26, 588, DateTimeKind.Local).AddTicks(1375),
+                            AssignmentCreated = new DateTime(2024, 12, 11, 14, 57, 51, 521, DateTimeKind.Local).AddTicks(287),
                             AssignmentDescription = "",
                             AssignmentTitle = "Go",
                             DueDate = new DateTime(2024, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -397,16 +397,16 @@ namespace pomodoro.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "3c3e8a73-c134-4297-9dc0-cb8dc307b60b",
+                            ConcurrencyStamp = "f25abdc7-1226-4d21-881b-baf69844cb2d",
                             Email = "testuser@gmail.com",
                             EmailConfirmed = true,
                             FirstName = "Sam",
                             LastName = "Doe",
                             LockoutEnabled = false,
                             NormalizedUserName = "Username",
-                            PasswordHash = "AQAAAAIAAYagAAAAECIYodJaqpCUJa/ksfhfBl+2cZUnB5ASwGuMGhXwgScVBc5kQbpEMBF2kQXm8UM/Zw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMFJDaSs8ngpidno92IU+GZNP9NgydmUdzlji6upZ+LA9D92ntzJShH5i2k2aftvxA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ca27d1ac-6d5f-43f5-be86-4cb804057cc1",
+                            SecurityStamp = "2cecde8f-c9d9-46df-bcbd-21ac10031773",
                             TwoFactorEnabled = false,
                             UserName = "test@gmail.com"
                         },
@@ -414,16 +414,16 @@ namespace pomodoro.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "389b6f74-2ae9-4722-b746-f4e2c1e894ea",
+                            ConcurrencyStamp = "ce15ddf7-18d2-4c86-a2a2-bfc4125d511c",
                             Email = "checkBoy@gmail.com",
                             EmailConfirmed = true,
                             FirstName = "Check",
                             LastName = "Sam",
                             LockoutEnabled = false,
                             NormalizedUserName = "CheckBoy",
-                            PasswordHash = "AQAAAAIAAYagAAAAEChvGIZM96IEhXAqhQrrcASw4C062js2nsiP9yoDEhrmN6is8+7kiu094KhhCieidg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEP0Vj2HHXYAEWL3FmPWLT8Lm3GQCe5tFcEDys2Io54uCK7hFc4hGzpVzuE0LO4o5aA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "b801024e-7c62-444b-8382-371c56af04d7",
+                            SecurityStamp = "dafb763d-e6c2-4d2c-a235-841e85e3ddf1",
                             TwoFactorEnabled = false,
                             UserName = "checkBoy"
                         });
@@ -482,13 +482,13 @@ namespace pomodoro.Migrations
 
             modelBuilder.Entity("Pomodoro.Models.Assignment", b =>
                 {
-                    b.HasOne("Pomodoro.Models.User", "AssignmentOwner")
+                    b.HasOne("Pomodoro.Models.User", "assignmentOwner")
                         .WithMany("Assignments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AssignmentOwner");
+                    b.Navigation("assignmentOwner");
                 });
 
             modelBuilder.Entity("Pomodoro.Models.Reminder", b =>

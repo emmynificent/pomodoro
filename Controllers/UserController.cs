@@ -27,49 +27,52 @@ public class UserController : ControllerBase
 
     //Get all users
     [HttpGet]
-    public IActionResult GetUsers()
+    public async Task<IActionResult> GetUsers()
     {
-        var users = _userRepository.GetUsers();
+        var users = await  _userRepository.GetUsersAsync();
         return Ok(users);
     }
 
     // this return a single user information
-    [HttpGet ("userId")]
-    public IActionResult GetUser(string userId)
+    [HttpGet ("email")]
+    public async Task<IActionResult> GetUser(string email)
     {
-        if (!_userRepository.UserExist(userId))
+        var  retriveUser = await _userRepository.GetUserbyEmailAsync(email);
+        if (retriveUser == null)
             return NotFound();
 
-        var user = _userRepository.GetUser(userId);
+        var user = await _userRepository.GetUserbyEmailAsync(email);
         return Ok(user);
     }
 
-    [HttpPost]
-    public IActionResult CreateUser(UserDto userDto)
-    {
-        if (userDto == null)
-            return BadRequest();
-        if(!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        var userMap = _mapper.Map<User>(userDto);
-        if(!_userRepository.CreateUser(userMap))
-            return NotFound();
-        return Created();
-    }
-
     //this is to get the assignments assigned to a single user
+    // there might be a need to change from user Id to using user email.
+    
     [HttpGet("GetAssignmentsByUserId")]
-    public IActionResult GetAssignmentsByUserId(string userId)
+    public async Task<IActionResult> GetAssignmentsByUserId(string userId)
     {
-        if(!_userRepository.UserExist(userId))
+        var user = await _userRepository.GetUserbyIdAsync(userId);
+        if(user==null)
             return NotFound();
-        var assignmentByUserId = _userRepository.GetAssignments(userId);
+        var assignmentByUserId = await _userRepository.GetAssignmentsAsync(userId);
         if(assignmentByUserId == null)
             return NotFound("This user has no assignment!");
         return Ok(assignmentByUserId);
+    }
 
+    [HttpGet("GetAssignmentbyUserEmail")]
+    public async Task<IActionResult> GetAssignmentbyUserEmail(string userEmail)
+    {
+        var mail = await _userRepository.UserExist(userEmail);
+        if(mail == null)
+            return NotFound();
+        
+        var assignments = await _userRepository.GetAssignmentByUserEmailAsync(userEmail);
+        if(assignments == null)
+        {
+            return NotFound();
+        }
+        return Ok(assignments);
     }
 
 }

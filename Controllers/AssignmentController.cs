@@ -1,140 +1,177 @@
-using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
-using Pomodoro.Data;
-using Pomodoro.Dto;
-using Pomodoro.Interface;
-using Pomodoro.Models;
-using Pomodoro.Repository;
+    using Microsoft.AspNetCore.Mvc;
+    using AutoMapper;
+    using Pomodoro.Data;
+    using Pomodoro.Dto;
+    using Pomodoro.Interface;
+    using Pomodoro.Models;
+    using Pomodoro.Repository;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
+    using Microsoft.AspNetCore.Identity;
+using System.Text.Json;
 
 namespace Pomodoro.Controller;
 
-[Route("api/[controller]")]
-[ApiController]
+    //[Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
-
-public class AssignmentController: ControllerBase
-{
-    private readonly IAssignmentRepository _assignmentRepository;
-    private readonly IMapper _mapper;
-    private readonly IUserRepository _userRepository;
-
-    public AssignmentController(IAssignmentRepository assignmentRespository, IMapper mapper, IUserRepository userRepository)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AssignmentController: ControllerBase
     {
-        _assignmentRepository = assignmentRespository;
-        _mapper = mapper;
-        _userRepository = userRepository;
-    }
+        private readonly IAssignmentRepository _assignmentRepository;
+        private readonly IMapper _mapper;
+        private readonly IUserRepository _userRepository;
 
-    [HttpGet]
-    public IActionResult GetAssignments()
-    {
-        var assignments =_assignmentRepository.GetAssignments();
-        var assignmentMaps = _mapper.Map<List<AssignmentOutputDto>>(assignments);
-        return Ok(assignmentMaps);
-        //return Ok(assignmentMaps);
-
-    }
-
-    [HttpGet("{assignmentId}")]
-    [ProducesResponseType(200, Type = typeof(Assignment))]
-    [ProducesResponseType(404)]
-
-    public IActionResult GetAssignment(int assignmentId)
-    {
-        //var assignment = _assignmentRepository.GetAssignment(assignmentId);
-        if(!_assignmentRepository.AssignmentExist(assignmentId))
+        public AssignmentController(IAssignmentRepository assignmentRespository, IMapper mapper, IUserRepository userRepository)
         {
-            return NotFound($"{assignmentId} not found");
-        }        
-       var assignment = _mapper.Map<AssignmentDto>(_assignmentRepository.GetAssignment(assignmentId));
-       if(!ModelState.IsValid)
-       {
-            return BadRequest(ModelState);
+            _assignmentRepository = assignmentRespository; 
+            _mapper = mapper;
+            _userRepository = userRepository;
+        }
+        //[Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetAssignments()
+        {
+            var assignments =  await _assignmentRepository.GetAssignmentsAsync();
+            var assignmentMaps = _mapper.Map<List<AssignmentOutputDto>>(assignments);
+            return Ok(assignmentMaps);
 
-       }
-        return Ok(assignment);
+        }
+
+// an idea, a web page that helps user generate lyrics to a song 
+
+        [Authorize]
+        [HttpGet("AssignmentbyId/{assignmentId}")]
+        [ProducesResponseType(200, Type = typeof(Assignment))]
+        public async Task<IActionResult> GetAssignment(int assignmentId)
+        {   
+                
+            //this is getting the userId from the logged in token
+            // var userId = User.FindFirst("Id")?.Value;
+
+            // if(string.IsNullOrEmpty(userId))
+            // {
+            //     return Unauthorized("User not authorized");
+            // }
+            //var assignment = _assignmentRepository.GetAssignment(assignmentId);
+            if(!_assignmentRepository.AssignmentExist(assignmentId))
+            {
+                return NotFound($"Assignment {assignmentId} not found");
+            }        
+        //var assignment = _mapper.Map<AssignmentDto>(_assignmentRepository.GetAssignment(assignmentId));
+
+        //retrieving the assignment, and checking if the assignment.userid is the same as the one retrived from the token
+        var assignment = await _assignmentRepository.GetAssignmentAsync(assignmentId);
         
-    }
 
+        var assignmnetDto = _mapper.Map<AssignmentDto>(assignment); 
 
-    [HttpPost]
-
-    // there should be a check to see if the the userId even exist before the assignment is created.
-    public IActionResult CreateAssignment([FromBody] AssignmentDto assignment)
-    {
-        if(assignment == null)
-            return BadRequest();
-        var assignments = _assignmentRepository.GetAssignments().Where(a=> a.AssignmentTitle.Trim()== assignment.AssignmentTitle.Trim()).FirstOrDefault();
-        
         if(!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        var assignmentMap = _mapper.Map<Assignment>(assignment);
-        if(!_assignmentRepository.CreateAssignment(assignmentMap))
-            return NotFound();
-        return Ok();
-    }
-
-
-    [HttpPut ("{assignmentId}")]
-    public IActionResult UpdateAssignment(int assignmentId, [FromBody] AssignmentInputDto updateAssignment)
-    {
-        // var search = _assignmentRepository.AssignmentExist(Id);
-        if(updateAssignment == null)
-            return BadRequest();
-        if(!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        if(!_assignmentRepository.AssignmentExist(assignmentId))
-            return NotFound("This ID does not exist");
+        return Ok(assignmnetDto);
             
-        var assignmentExist = _assignmentRepository.GetAssignment(assignmentId);
-        if(assignmentExist == null)
+        }
+        // there should be a check to see if the the userId even exist before the assignment is created.
+
+        [Authorize]
+        [HttpPost ("CreateAssignment")]
+        public async Task<IActionResult> CreateAssignment([FromBody] AssignmentDto assignment)
         {
-            return NotFound("The assignment could not be found!");
+            if(assignment == null)
+                return BadRequest();
+            
+            Console.WriteLine($"Received : {JsonSerializer.Serialize(assignment)}"); 
+            
+            var userId = User.FindFirst("Id")?.Value;
+            if(string.IsNullOrEmpty(userId))
+                return Unauthorized("user not authorized.");
+            var userExists =  await _userRepository.GetUserbyIdAsync(userId);
+
+            // var existingAsignment = await _assignmentRepository.GetAssignmentsAsync();
+            // var existingAssignmentDto = existingAsignment.FirstOrDefault(assignment => assignment.AssignmentTitle.Trim()
+            // .ToLower()== assignment.AssignmentTitle.Trim().ToLower() && assignment.UserId == userId);
+
+            // if(existingAssignmentDto != null)
+            //     return Conflict("An assignment with the same title already exist for this user");
+            var assignmentMap = _mapper.Map<Assignment>(assignment);
+
+             assignmentMap.UserId = userId;
+            
+            
+            if(!ModelState.IsValid)
+            {
+                
+                return BadRequest(ModelState);
+            }
+            var created = await _assignmentRepository.CreateAssignmentAsync(assignmentMap);
+
+            return Ok("Assignment successfully created! ");
         }
 
-        _mapper.Map(updateAssignment, assignmentExist);
+        [Authorize]
+        [HttpPut ("{assignmentId}")]
+        public async Task<IActionResult> UpdateAssignment(int assignmentId, [FromBody] AssignmentInputDto updateAssignment)
+        {
+            // var search = _assignmentRexository.AssignmentExist(Id);
+            if(updateAssignment == null)
+                return BadRequest();
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        if(!_assignmentRepository.UpdateAssignment(assignmentExist))
+            
 
-            return BadRequest("Something went wrong");
+            if(!_assignmentRepository.AssignmentExist(assignmentId))
+                return NotFound("This ID does not exist");
+                
+            var assignmentExist = await _assignmentRepository.GetAssignmentAsync(assignmentId);
+            if(assignmentExist == null)
+            {
+                return NotFound("The assignment could not be found!");
+            }
 
-        return NoContent();
+            _mapper.Map(updateAssignment, assignmentExist);
+            if (!await _assignmentRepository.UpdateAssignment(assignmentExist)) 
+            {
+                return StatusCode(500, "An error occurred while updating the assignment.");
+            }
+
+            return NoContent();
+        }
+        [Authorize]
+        [HttpDelete("{assignmentId}")]
+        public async Task<IActionResult> DeleteAssignment(int assignmentId)
+        {
+            if(! _assignmentRepository.AssignmentExist(assignmentId))
+                return BadRequest();
+            var deleteassignment = await _assignmentRepository.GetAssignmentAsync(assignmentId);
+
+           await _assignmentRepository.DeleteAssignment(deleteassignment);
+
+            return Ok();
+        }
+
+        // [HttpGet("reminderbyassignmentid{assignmentId}")]
+        // public IActionResult GetReminders(int assignmentId){
+
+        //     if (assignmentId == 0)
+        //         return BadRequest();
+        //     var reminders = _assignmentRepository.GetRemindersByAssignmentId(assignmentId);
+        //     return Ok(reminders);
+        // }
+
+        //reminders under one assignment
+        [Authorize]
+        [HttpGet("GetAssignmentByUserId")]
+        public async Task<IActionResult> GetAssignmentByUserId(string userId)
+        {
+            var user = await _userRepository.GetUserbyIdAsync(userId);
+
+            if(user == null)
+                return NotFound("User does not exist");
+            var assignmentByUser = await _assignmentRepository.GetAssignmentByUserId(userId);
+            return Ok(assignmentByUser);
+        }
     }
-
-    [HttpDelete("{assignmentId}")]
-    public IActionResult DeleteAssignment(int assignmentId)
-    {
-        if(!_assignmentRepository.AssignmentExist(assignmentId))
-            return BadRequest();
-        var deleteassignment = _assignmentRepository.GetAssignment(assignmentId);
-
-        _assignmentRepository.DeleteAssignment(deleteassignment);
-        _assignmentRepository.Save();
-        return Ok();
-    }
-
-    [HttpGet("reminderbyassignmentid{assignmentId}")]
-    public IActionResult GetReminders(int assignmentId){
-
-        if (assignmentId == null)
-            return BadRequest();
-        var reminders = _assignmentRepository.GetRemindersByAssignmentId(assignmentId);
-        return Ok(reminders);
-    }
-
-    //reminders under one assignment
-    [HttpGet("GetAssignmentByUserId")]
-    public IActionResult GetAssignmentByUserId(string userId)
-    {
-        if(!_userRepository.UserExist(userId))
-            return NotFound("User does not exist");
-        var assignmentByUser = _assignmentRepository.GetAssignmentByUserId(userId);
-        return Ok(assignmentByUser);
-    }
-
-
-
-}

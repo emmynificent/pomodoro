@@ -1,16 +1,19 @@
-using Pomodoro.Dto;
 using Pomodoro.Models;
+using Pomodoro.Dto;
 
 namespace Pomodoro.Interface;
 public interface IUserRepository
 {
-    ICollection<UserDto> GetUsers();
-    User GetUser(string UserId);
-    bool CreateUser(User user);
+    Task<ICollection<UserDto>> GetUsersAsync();
+    //Task<User> GetUserAsync(string UserId);
+    Task<User> CreateUserAsync(User user);
+
+    Task<User> GetUserbyIdAsync(string userId);
+    Task<User> GetUserbyEmailAsync(string email);
     bool DeleteUser(User user);
     bool UpdateUser(User user);
-    bool UserExist(string UserId);
+    Task<User> UserExist(string UserEmail);
     bool Save();
-    ICollection<AssignmentDto> GetAssignments (string userId);
-
+    Task<ICollection<AssignmentDto>> GetAssignmentsAsync (string userId);
+    Task<ICollection<AssignmentDto>> GetAssignmentByUserEmailAsync(string userMail);
 }

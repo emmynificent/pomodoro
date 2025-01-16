@@ -1,4 +1,5 @@
 using AutoMapper;
+using Dto;
 using Microsoft.AspNetCore.Identity;
 using Pomodoro.Dto;
 using Pomodoro.Models;
@@ -8,8 +9,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Assignment, AssignmentDto>()
-        .ForMember(dest=> dest.Owner, opt => opt.MapFrom(src => src.assignmentOwner.FirstName) );
+        CreateMap<Assignment, AssignmentDto>();
         CreateMap<AssignmentDto, Assignment>();
         CreateMap<AssignmentOutputDto, Assignment>();
         CreateMap<Assignment, AssignmentOutputDto>();
@@ -18,6 +18,6 @@ public class MappingProfile : Profile
         CreateMap<ReminderDto, Reminder>();
         CreateMap<UserDto, User>();
         CreateMap<User, UserDto>();
-       
+        //CreateMap<UserRegistration , UserRegistrationDto>();
     }
 }

@@ -24,56 +24,68 @@ public class AssignmentRepository : IAssignmentRepository
         return _assignmentDbContext.Assignments.Any(a=> a.Id == id);
     }
 
-    public bool CreateAssignment(Assignment assignment)
+    public async Task<Assignment> CreateAssignmentAsync(Assignment assignment)
     {
         
-        _assignmentDbContext.Assignments.Add(assignment);
-        return Save();
+        await _assignmentDbContext.AddAsync(assignment);
+        await _assignmentDbContext.SaveChangesAsync();
+        return assignment;
 
     }
 
-    public bool DeleteAssignment(Assignment assignment)
+    public async Task<Assignment> DeleteAssignment(Assignment assignment)
     {
         _assignmentDbContext.Remove(assignment);
-        return Save();
-    }
+        await _assignmentDbContext.SaveChangesAsync();
 
-    public Assignment GetAssignment(int Id)
-    {
-        var assignment =  _assignmentDbContext.Assignments
-        .Include(a=>a.assignmentOwner)
-        .Where(a=> a.Id ==Id).FirstOrDefault();
         return assignment;
     }
 
-    public ICollection<Assignment> GetAssignmentByUserId(string userId)
+    public async Task<Assignment> GetAssignmentAsync(int Id)
     {
-        var assignmentByUser =  _assignmentDbContext.Users
+        var assignment = await _assignmentDbContext.Assignments
+        .Include(a=>a.Owner)
+        .Where(a=> a.Id ==Id).FirstOrDefaultAsync();
+        return assignment;
+    }
+
+    public async Task<ICollection<Assignment>> GetAssignmentByUserId(string userId)
+    {
+        var assignmentByUser = await _assignmentDbContext.Users
         .Where(u => u.Id == userId)
         .Select(a=> a.Assignments)
-        .FirstOrDefault();
-
+        .FirstOrDefaultAsync();
         return assignmentByUser;
     }
 
-    public ICollection<Assignment> GetAssignments()
+    public async Task<ICollection<Assignment>> GetAssignmentsAsync()
     {
-        var assignment = _assignmentDbContext.Assignments
-         .Include(a => a.assignmentOwner)
-         .ToList();
+        var assignment = await _assignmentDbContext.Assignments
+         .Include(a => a.Owner)
+         .ToListAsync();
+
         return assignment;
     }
 
-    public ICollection<Reminder> GetRemindersByAssignmentId(int assignmentId)
+    public async Task<ICollection<Assignment>> GetAssignmentsByUserEmailAsync(string userMail)
     {
-        //var reminder = _assignmentDbContext.Reminders.Where(a => a.Id == Id).FirstOrDefault();
-        //return _assignmentDbContext.Reminders.Where(r=> r.Id == Id).Select(r=> r.assignment).FirstOrDefault();
-        var reminders = _assignmentDbContext.Assignments.Where(a=> a.Id == assignmentId).Select(a => a.Reminders).FirstOrDefault();
-        //var remindersMap = _mapper.Map<List<Reminder>>(reminders);
-        return reminders;
-        
-        //return reminders
+        var assignment = await _assignmentDbContext.Assignments
+        .Include(a=>a.Owner)
+        .Where(a=> a.Owner.Email == userMail).ToListAsync();
+
+        return assignment;
     }
+
+    // public ICollection<Reminder> GetRemindersByAssignmentId(int assignmentId)
+    // {
+    //     //var reminder = _assignmentDbContext.Reminders.Where(a => a.Id == Id).FirstOrDefault();
+    //     //return _assignmentDbContext.Reminders.Where(r=> r.Id == Id).Select(r=> r.assignment).FirstOrDefault();
+    //     var reminders = _assignmentDbContext.Assignments.Where(a=> a.Id == assignmentId).Select(a => a.Reminders).FirstOrDefault();
+    //     //var remindersMap = _mapper.Map<List<Reminder>>(reminders);
+    //     return reminders;
+        
+    //     //return reminders
+    // }
 
 
     public bool Save()
@@ -82,11 +94,13 @@ public class AssignmentRepository : IAssignmentRepository
             return saved > 0 ? true : false;
     }
 
-    public bool UpdateAssignment(Assignment assignment)
+    public async Task<bool> UpdateAssignment(Assignment assignment)
     {
         _assignmentDbContext.Update(assignment);
+        await _assignmentDbContext.SaveChangesAsync();
         return Save();
 
+        
     }
 
     

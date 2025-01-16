@@ -20,36 +20,54 @@ public class UserRepository : IUserRepository
         _mapper = mapper;
     }
 
-    public bool CreateUser(User user)
+    public async Task<User>  CreateUserAsync(User user)
     {
-        _assignmentDbContext.Users.Add(user);
-        //var createMap = _mapper.Map<UserDto>();
-        return Save();
+
+        try{
+            await _assignmentDbContext.Users.AddAsync(user);
+            await _assignmentDbContext.SaveChangesAsync();
+            return user;
+        }
+        catch{
+            return null;
+        }
     }
 
     public bool DeleteUser(User user)
     {
-        _assignmentDbContext.Users.Remove(user);
+        _assignmentDbContext.Remove(user);
         return Save();
     }
 
-    public User GetUser(string  UserId)
+    public async Task<User> GetUserbyEmailAsync(string email)
     {
         
-        var user = _assignmentDbContext.Users.Where(u => u.Id == UserId).FirstOrDefault();
+        var user = await _assignmentDbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
+
         return user;
     }
 
-    public ICollection<UserDto> GetUsers()
+    public async Task<User> GetUserbyIdAsync(string userId)
     {
-        var users = _assignmentDbContext.Users.ToList();
+        
+        var user = await _assignmentDbContext.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
+
+        return user;
+    }
+    public async Task<ICollection<UserDto>> GetUsersAsync()
+    {
+        var users = await _assignmentDbContext.Users.ToListAsync();
         var userMap = _mapper.Map<List<UserDto>>(users);
         return userMap;
     }
 
-    public bool UserExist(string UserId)
-    {
-        return _assignmentDbContext.Users.Any(u => u.Id == UserId);
+    // public async Task<User> UserExistAsync(string UserId)
+    // {
+    //     return await _assignmentDbContext.Users.Any(u => u.Id == UserId).ToListAsync();
+    // }
+    public async Task<User> UserExist(string email){
+         var exist = await _assignmentDbContext.Users.FirstOrDefaultAsync(u=>u.Email == email);
+         return exist;
         
     }
 
@@ -65,13 +83,23 @@ public class UserRepository : IUserRepository
         return Save();
     }
     //Getting assignment by userId (assignments owner by the giving user Id)
-    public ICollection<AssignmentDto> GetAssignments(string userId)
+    public async Task<ICollection<AssignmentDto>> GetAssignmentsAsync(string userId)
     {
-        var assignments = _assignmentDbContext.Assignments
-        .Include(a => a.assignmentOwner)
-        .Where(a=> a.UserId == userId).ToList();
+        var assignments = await _assignmentDbContext.Assignments
+        .Include(a => a.Owner)
+        .Where(a=> a.UserId == userId).ToListAsync();
 
         var assignmentDto = _mapper.Map<List<AssignmentDto>>(assignments);
         return assignmentDto;
+    }
+
+    public async Task<ICollection<AssignmentDto>> GetAssignmentByUserEmailAsync(string userMail)
+    {
+       var assignments =  await _assignmentDbContext.Assignments
+        .Include(a=> a.Owner)
+        .Where(a=> a.Owner.UserName == userMail).ToListAsync();
+
+        var assignmentbyEmailDto = _mapper.Map<List<AssignmentDto>>(assignments);
+        return assignmentbyEmailDto;
     }
 }

@@ -14,7 +14,7 @@ public class Assignment
     public bool SetReminder {get; set;} = false;
     public ICollection<Reminder>? Reminders {get; set;}
     public string UserId {get; set;}
-    public User assignmentOwner {get; set;} 
+    public User Owner {get; set;} 
 }
 
 public enum Priority
